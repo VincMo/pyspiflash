@@ -47,13 +47,14 @@ class SerialFlashUnknownJedec(SerialFlashNotSupported):
     """Exception thrown when a JEDEC identifier is not recognized"""
 
     def __init__(self, jedec):
-        SerialFlashNotSupported.__init__(self, "Unknown flash device: %s" %
-                                         hexlify(jedec))
+        SerialFlashNotSupported.__init__(
+            self, "Unknown flash device: %s" % hexlify(jedec)
+        )
 
 
 class SerialFlashTimeout(SerialFlashError):
     """Exception thrown when a flash command cannot be completed in a timely
-       manner"""
+    manner"""
 
 
 class SerialFlashValueError(ValueError, SerialFlashError):
@@ -67,95 +68,94 @@ class SerialFlashRequestError(SerialFlashError):
 class SerialFlash:
     """Interface of a generic SPI flash device"""
 
-    FEAT_NONE = 0x000          # No special feature
-    FEAT_LOCK = 0x001          # Basic, revertable locking
-    FEAT_INVLOCK = 0x002       # Inverted (bottom/top) locking
-    FEAT_SECTLOCK = 0x004      # Arbitrary sector locking
-    FEAT_OTPLOCK = 0x008       # OTP locking available
-    FEAT_UNIQUEID = 0x010      # Unique ID
-    FEAT_SECTERASE = 0x100     # Can erase whole sectors
-    FEAT_HSECTERASE = 0x200    # Can erase half sectors
+    FEAT_NONE = 0x000  # No special feature
+    FEAT_LOCK = 0x001  # Basic, revertable locking
+    FEAT_INVLOCK = 0x002  # Inverted (bottom/top) locking
+    FEAT_SECTLOCK = 0x004  # Arbitrary sector locking
+    FEAT_OTPLOCK = 0x008  # OTP locking available
+    FEAT_UNIQUEID = 0x010  # Unique ID
+    FEAT_SECTERASE = 0x100  # Can erase whole sectors
+    FEAT_HSECTERASE = 0x200  # Can erase half sectors
     FEAT_SUBSECTERASE = 0x400  # Can erase sub sectors
-    FEAT_CHIPERASE = 0x800     # Can erase full chip
+    FEAT_CHIPERASE = 0x800  # Can erase full chip
 
     def set_spi_frequency(self, freq: Optional[float] = None) -> None:
         """Set the SPI bus frequency to communicate with the device. Set
-           default SPI frequency if none is provided."""
+        default SPI frequency if none is provided."""
         raise NotImplementedError()
 
     def read(self, address: int, length: int) -> bytes:
         """Read a sequence of bytes from the specified address.
 
-           :param address: the position of the first byte to read
-           :param length: the count of bytes to read
-           :return: an array of bytes
+        :param address: the position of the first byte to read
+        :param length: the count of bytes to read
+        :return: an array of bytes
         """
         raise NotImplementedError()
 
-    def write(self, address: int,
-              data: Union[bytes, bytearray, Iterable[int]]) -> None:
+    def write(self, address: int, data: Union[bytes, bytearray, Iterable[int]]) -> None:
         """Write a sequence of bytes, starting at the specified address.
 
-           :note: the device cells are not automatically erased, which means
-                  that the bytes actually stored to the device match a NAND
-                  operation between the existing content of the cell and the
-                  data values, i.e. it is only possible to write 0s into the
-                  flash cells, not 1s. :py:meth:`erase` should be explictly
-                  called to erase one or more blocks.
+        :note: the device cells are not automatically erased, which means
+               that the bytes actually stored to the device match a NAND
+               operation between the existing content of the cell and the
+               data values, i.e. it is only possible to write 0s into the
+               flash cells, not 1s. :py:meth:`erase` should be explictly
+               called to erase one or more blocks.
 
-           :param address: the position of the first byte to write
-           :param data: a sequence of bytes to write
+        :param address: the position of the first byte to write
+        :param data: a sequence of bytes to write
         """
         raise NotImplementedError()
 
     def erase(self, address: int, length: int, verify: bool = False) -> None:
         """Erase a block of bytes.
 
-           Address and length depends upon device-specific constraints and
-           should be aligned on device blocks.
+        Address and length depends upon device-specific constraints and
+        should be aligned on device blocks.
 
-           As a special feature, specifying address as 0 and length to -1
-           triggers a full chip erase.
+        As a special feature, specifying address as 0 and length to -1
+        triggers a full chip erase.
 
-           :param address: the position of the first byte to erase
-           :param length: the count of bytes to erase
-           :param verify: optionally check that the selected blocks have been
-                          erased, reading them back.
+        :param address: the position of the first byte to erase
+        :param length: the count of bytes to erase
+        :param verify: optionally check that the selected blocks have been
+                       erased, reading them back.
         """
         raise NotImplementedError()
 
     def can_erase(self, address: int, length: int) -> None:
         """Verifies that a defined area can be erased on the flash device.
-           It does not take into account any locking scheme, only the area
-           boundary.
+        It does not take into account any locking scheme, only the area
+        boundary.
 
-           :param address: the position of the first byte to erase
-           :param length: the count of bytes to erase
+        :param address: the position of the first byte to erase
+        :param length: the count of bytes to erase
 
-           :raise SerialFlashValueError: if erase cannot be performed
+        :raise SerialFlashValueError: if erase cannot be performed
         """
         raise NotImplementedError()
 
     def is_busy(self) -> bool:
         """Reports whether the flash may receive commands or is actually
-           being performing internal work.
+        being performing internal work.
 
-           :return: True if the device is busy and cannot accept new I/O
-                    commands, False otherwise.
-           """
+        :return: True if the device is busy and cannot accept new I/O
+                 commands, False otherwise.
+        """
         raise NotImplementedError()
 
     def get_capacity(self) -> int:
         """Get the flash device capacity in bytes.
 
-           :return: the capacity of the device, in bytes.
+        :return: the capacity of the device, in bytes.
         """
         raise len(self)
 
     def unlock(self) -> None:
         """Make the whole device read/write.
 
-           Some flash devices are write-locked at power up.
+        Some flash devices are write-locked at power up.
         """
         raise NotImplementedError()
 
@@ -163,19 +163,19 @@ class SerialFlash:
     def unique_id(self) -> int:
         """Return the unique ID of the flash, if it exists.
 
-           :return: the unique ID
+        :return: the unique ID
         """
         raise NotImplementedError()
 
     def get_timings(self, timing: str) -> Tuple[float, float]:
         """Get a time tuple (typical, max).
 
-           Timings are use to track whether a device successfully completed
-           a command or if a command timed out.
+        Timings are use to track whether a device successfully completed
+        a command or if a command timed out.
 
-           :param timing: the kind of operation
-           :return: typical time to complete the operation, maximum time to
-                    complete the operation
+        :param timing: the kind of operation
+        :return: typical time to complete the operation, maximum time to
+                 complete the operation
         """
         raise NotImplementedError()
 
@@ -183,8 +183,8 @@ class SerialFlash:
     def has_feature(cls, feature: int) -> bool:
         """Test whether the flash device supports a feature.
 
-           :param feature: the feature to test
-           :return: True if the feature is supported, False otherwise
+        :param feature: the feature to test
+        :return: True if the feature is supported, False otherwise
         """
         raise NotImplementedError()
 
@@ -192,8 +192,8 @@ class SerialFlash:
     def match(cls, jedec: Union[bytes, bytearray, Iterable[int]]) -> bool:
         """Tells whether this class support this JEDEC identifier.
 
-           :param jedec: device type as a sequence of bytes
-           :return: True if the current class supports the detected device.
+        :param jedec: device type as a sequence of bytes
+        :return: True if the current class supports the detected device.
         """
         raise NotImplementedError()
 
@@ -201,23 +201,23 @@ class SerialFlash:
 class SerialFlashManager:
     """Serial flash manager.
 
-       Automatically detects and instanciate the proper flash device class
-       based on the JEDEC identifier which is read out from the device itself.
+    Automatically detects and instanciate the proper flash device class
+    based on the JEDEC identifier which is read out from the device itself.
     """
 
     CMD_JEDEC_ID = 0x9F
 
     @staticmethod
-    def get_from_controller(spictrl: SpiController,
-                            cs: int = 0, freq: Optional[float] = None) \
-            -> '_SpiFlashDevice':
+    def get_from_controller(
+        spictrl: SpiController, cs: int = 0, freq: Optional[float] = None
+    ) -> "_SpiFlashDevice":
         """Obtain an instance of the detected flash device, using an
-           existing SpiController.
+        existing SpiController.
 
-           :param spictrl: a PyFtdi configured SpiController instance
-           :param cs: the /CS line to use from the controller
-           :param freq: the SPI bus frequency for this flash device
-           :return: new instance of the flash device, if detected
+        :param spictrl: a PyFtdi configured SpiController instance
+        :param cs: the /CS line to use from the controller
+        :param freq: the SPI bus frequency for this flash device
+        :return: new instance of the flash device, if detected
         """
         spi = spictrl.get_port(cs, freq)
         jedec = SerialFlashManager.read_jedec_id(spi)
@@ -230,16 +230,17 @@ class SerialFlashManager:
         return flash
 
     @staticmethod
-    def get_flash_device(url: str, cs: int = 0, freq: Optional[float] = None) \
-            -> '_SpiFlashDevice':
+    def get_flash_device(
+        url: str, cs: int = 0, freq: Optional[float] = None
+    ) -> "_SpiFlashDevice":
         """Obtain an instance of the detected flash device.
 
-           :param url: PyFtdi controller or a PyUSB UsbDevice
-           :param cs: the /CS line to use from the controller
-           :param freq: the SPI bus frequency for this flash device
-           :return: new instance of the flash device, if detected
+        :param url: PyFtdi controller or a PyUSB UsbDevice
+        :param cs: the /CS line to use from the controller
+        :param freq: the SPI bus frequency for this flash device
+        :return: new instance of the flash device, if detected
         """
-        ctrl = SpiController(cs_count=cs+1)
+        ctrl = SpiController(cs_count=cs + 1)
         ctrl.configure(url)
         spi = ctrl.get_port(cs, freq)
         jedec = SerialFlashManager.read_jedec_id(spi)
@@ -258,30 +259,30 @@ class SerialFlashManager:
         return spi.exchange(jedec_cmd, 3)
 
     @staticmethod
-    def _get_flash(spi: SpiPort, jedec: bytes) -> '_SpiFlashDevice':
+    def _get_flash(spi: SpiPort, jedec: bytes) -> "_SpiFlashDevice":
         devices = []
         contents = sys.modules[__name__].__dict__
         for name in contents:
-            if name.endswith('FlashDevice') and not name.startswith('_'):
+            if name.endswith("FlashDevice") and not name.startswith("_"):
                 devices.append(contents[name])
         for device in devices:
             if device.match(jedec):
                 return device(spi, jedec)
         if any(jedec):
             raise SerialFlashUnknownJedec(jedec)
-        raise SerialFlashError('No serial flash detected')
+        raise SerialFlashError("No serial flash detected")
 
 
 class _SpiFlashDevice(SerialFlash):
     """Generic flash device implementation.
 
-       Most SPI flash devices share commands and parameters. Those devices
-       generally contains '25' in their reference. However, there are virtually
-       no '25' device that is fully compliant with any counterpart from
-       a concurrent manufacturer. Most differences are focused on lock and
-       security features. Here comes the mess... This class contains the most
-       common implementation for the basic feature, and each physical device
-       inherit from this class for feature specialization.
+    Most SPI flash devices share commands and parameters. Those devices
+    generally contains '25' in their reference. However, there are virtually
+    no '25' device that is fully compliant with any counterpart from
+    a concurrent manufacturer. Most differences are focused on lock and
+    security features. Here comes the mess... This class contains the most
+    common implementation for the basic feature, and each physical device
+    inherit from this class for feature specialization.
     """
 
     CMD_READ_LO_SPEED = 0x03  # Read @ low speed
@@ -295,13 +296,13 @@ class _SpiFlashDevice(SerialFlash):
     def spi_frequency(self) -> float:
         """REturn the current frequency of the SPI bus for this device.
 
-           :return: the bus frequency in Hz.
+        :return: the bus frequency in Hz.
         """
         return self._spi and self._spi.frequency
 
     def read(self, address: int, length: int) -> bytes:
-        if address+length > len(self):
-            raise SerialFlashValueError('Out of range')
+        if address + length > len(self):
+            raise SerialFlashValueError("Out of range")
         buf = bytearray()
         while length > 0:
             size = min(length, SpiController.PAYLOAD_MAX_LENGTH)
@@ -313,30 +314,31 @@ class _SpiFlashDevice(SerialFlash):
 
     def erase(self, address: int, length: int, verify: bool = False) -> None:
         """Erase sectors/blocks/chip of a "generic" flash device.
-           Erasure algorithm:
-           The area to erase span across one or more sectors, which can be
-           accounted as bigger blocks, depending on the start and end address
-           of the location to be erased
-           address ----------------- length ---------------------->
-                 v                                                 v
-              ...|LSS|LSS|LSS| LHS | LHS |  S  |  RHS  | RHS |RSS|RSS|RSS|....
+        Erasure algorithm:
+        The area to erase span across one or more sectors, which can be
+        accounted as bigger blocks, depending on the start and end address
+        of the location to be erased
+        address ----------------- length ---------------------->
+              v                                                 v
+           ...|LSS|LSS|LSS| LHS | LHS |  S  |  RHS  | RHS |RSS|RSS|RSS|....
 
-             LSS: left subsector, RSS: right subsector
-             LHS: left half-sector, RHS: right half-sector (32KB)
-             S: (large) sector (64kB)
-           Depending on the device capabilities, half-sector may or may not be
-           used. This routine tries to find and erase the biggest flash page
-           segments so that erasure time is decreased.
-           Concrete implementation should provide the various sector sizes
-           """
+          LSS: left subsector, RSS: right subsector
+          LHS: left half-sector, RHS: right half-sector (32KB)
+          S: (large) sector (64kB)
+        Depending on the device capabilities, half-sector may or may not be
+        used. This routine tries to find and erase the biggest flash page
+        segments so that erasure time is decreased.
+        Concrete implementation should provide the various sector sizes
+        """
         # sanity check
         if address == 0 and length == -1:
             length = len(self)
         self.can_erase(address, length)
         if address == 0 and length == len(self):
             if self.has_feature(SerialFlash.FEAT_CHIPERASE):
-                self._erase_chip(self.get_erase_command('chip'),
-                                 self.get_timings('chip'))
+                self._erase_chip(
+                    self.get_erase_command("chip"), self.get_timings("chip")
+                )
                 return
         self.get_erase_size()
         # first page to erase on the left-hand size
@@ -349,14 +351,18 @@ class _SpiFlashDevice(SerialFlash):
         rend = end
         if self.has_feature(SerialFlash.FEAT_SECTERASE):
             # Check whether one or more whole large sector can be erased
-            sector_size = self.get_size('sector')
-            sector_mask = ~(sector_size-1)
-            s_start = (start+sector_size-1) & sector_mask
+            sector_size = self.get_size("sector")
+            sector_mask = ~(sector_size - 1)
+            s_start = (start + sector_size - 1) & sector_mask
             s_end = end & sector_mask
             if s_start < s_end:
-                self._erase_blocks(self.get_erase_command('sector'),
-                                   self.get_timings('sector'),
-                                   s_start, s_end, sector_size)
+                self._erase_blocks(
+                    self.get_erase_command("sector"),
+                    self.get_timings("sector"),
+                    s_start,
+                    s_end,
+                    sector_size,
+                )
                 # update the left-hand end marker
                 end = s_start
                 # update the right-hand start marker
@@ -364,14 +370,18 @@ class _SpiFlashDevice(SerialFlash):
                     rstart = s_end
         if self.has_feature(SerialFlash.FEAT_HSECTERASE):
             # Check whether one or more left halfsectors can be erased
-            hsector_size = self.get_size('hsector')
-            hsector_mask = ~(hsector_size-1)
-            hsl_start = (start+sector_size-1) & sector_mask
+            hsector_size = self.get_size("hsector")
+            hsector_mask = ~(hsector_size - 1)
+            hsl_start = (start + sector_size - 1) & sector_mask
             hsl_end = end & sector_mask
             if hsl_start < hsl_end:
-                self._erase_blocks(self.get_erase_command('hsector'),
-                                   self.get_timings('hsector'),
-                                   hsl_start, hsl_end, hsector_size)
+                self._erase_blocks(
+                    self.get_erase_command("hsector"),
+                    self.get_timings("hsector"),
+                    hsl_start,
+                    hsl_end,
+                    hsector_size,
+                )
                 # update the left-hand end marker
                 end = hsl_start
                 # update the right-hand start marker
@@ -379,111 +389,137 @@ class _SpiFlashDevice(SerialFlash):
                     rstart = hsl_end
         if self.has_feature(SerialFlash.FEAT_SUBSECTERASE):
             # Check whether one or more left subsectors can be erased
-            subsector_size = self.get_size('subsector')
-            subsector_mask = ~(subsector_size-1)
-            ssl_start = (start+subsector_size-1) & subsector_mask
+            subsector_size = self.get_size("subsector")
+            subsector_mask = ~(subsector_size - 1)
+            ssl_start = (start + subsector_size - 1) & subsector_mask
             ssl_end = end & subsector_mask
             if ssl_start < ssl_end:
-                self._erase_blocks(self.get_erase_command('subsector'),
-                                   self.get_timings('subsector'),
-                                   ssl_start, ssl_end, subsector_size)
+                self._erase_blocks(
+                    self.get_erase_command("subsector"),
+                    self.get_timings("subsector"),
+                    ssl_start,
+                    ssl_end,
+                    subsector_size,
+                )
                 # update the right-hand start marker
                 if ssl_end > rstart:
                     rstart = ssl_end
         if self.has_feature(SerialFlash.FEAT_HSECTERASE):
             # Check whether one or more whole left halfsectors can be erased
-            hsr_start = (rstart+hsector_size-1) & hsector_mask
+            hsr_start = (rstart + hsector_size - 1) & hsector_mask
             hsr_end = rend & hsector_mask
             if hsr_start < hsr_end:
-                self._erase_blocks(self.get_erase_command('hsector'),
-                                   self.get_timings('hsector'),
-                                   hsr_start, hsr_end, hsector_size)
+                self._erase_blocks(
+                    self.get_erase_command("hsector"),
+                    self.get_timings("hsector"),
+                    hsr_start,
+                    hsr_end,
+                    hsector_size,
+                )
                 # update the right-hand start marker
                 if hsr_end > rstart:
                     rstart = hsr_end
         if self.has_feature(SerialFlash.FEAT_SUBSECTERASE):
             # Check whether one or more whole right subsectors can be erased
-            ssr_start = (rstart+subsector_size-1) & subsector_mask
+            ssr_start = (rstart + subsector_size - 1) & subsector_mask
             ssr_end = rend & subsector_mask
             if ssr_start < ssr_end:
-                self._erase_blocks(self.get_erase_command('subsector'),
-                                   self.get_timings('subsector'),
-                                   ssr_start, ssr_end, subsector_size)
+                self._erase_blocks(
+                    self.get_erase_command("subsector"),
+                    self.get_timings("subsector"),
+                    ssr_start,
+                    ssr_end,
+                    subsector_size,
+                )
         if verify:
             self._verify_content(address, length, 0xFF)
 
     def can_erase(self, address: int, length: int) -> None:
         """Tells whether a defined area can be erased on the Spansion flash
-           device. It does not take into account any locking scheme."""
+        device. It does not take into account any locking scheme."""
         if address == 0 and (length == -1 or length == len(self)):
             return
         erase_size = self.get_erase_size()
-        if address & (erase_size-1):
+        if address & (erase_size - 1):
             # start address should be aligned on a subsector boundary
-            raise SerialFlashValueError('Start address not aligned on a '
-                                        'erase sector boundary')
-        if ((length-1) & (erase_size-1)) != (erase_size-1):
+            raise SerialFlashValueError(
+                "Start address not aligned on a " "erase sector boundary"
+            )
+        if ((length - 1) & (erase_size - 1)) != (erase_size - 1):
             # length should be a multiple of a subsector
-            raise SerialFlashValueError('End address not aligned on a '
-                                        'erase sector boundary')
+            raise SerialFlashValueError(
+                "End address not aligned on a " "erase sector boundary"
+            )
         if (address + length) > len(self):
-            raise SerialFlashValueError('Would erase over the flash capacity')
+            raise SerialFlashValueError("Would erase over the flash capacity")
 
     def get_erase_size(self) -> int:
         """Return the erase size in bytes"""
         if self.has_feature(SerialFlash.FEAT_SUBSECTERASE):
-            return self.get_size('subsector')
+            return self.get_size("subsector")
         if self.has_feature(SerialFlash.FEAT_HSECTERASE):
-            return self.get_size('hsector')
+            return self.get_size("hsector")
         if self.has_feature(SerialFlash.FEAT_SECTERASE):
-            return self.get_size('sector')
+            return self.get_size("sector")
         raise SerialFlashNotSupported("Unknown erase size")
 
     def get_size(self, kind: str) -> int:
         """Return the size of a device block.
 
-          :param kind: the block type
-          :return: the size of the block, in bytes
+        :param kind: the block type
+        :return: the size of the block, in bytes
         """
         raise NotImplementedError()
 
     @classmethod
-    def get_erase_command(cls, block: str)-> bytes:
+    def get_erase_command(cls, block: str) -> bytes:
         """Get the erase command for a specified block kind"""
         raise NotImplementedError()
 
     def _read_lo_speed(self, address: int, length: int) -> bytes:
-        read_cmd = bytes((self.CMD_READ_LO_SPEED,
-                          (address >> 16) & 0xff, (address >> 8) & 0xff,
-                          address & 0xff))
+        read_cmd = bytes(
+            (
+                self.CMD_READ_LO_SPEED,
+                (address >> 16) & 0xFF,
+                (address >> 8) & 0xFF,
+                address & 0xFF,
+            )
+        )
         return self._spi.exchange(read_cmd, length)
 
     def _read_hi_speed(self, address: int, length: int) -> bytes:
-        read_cmd = bytes((self.CMD_READ_HI_SPEED,
-                          (address >> 16) & 0xff, (address >> 8) & 0xff,
-                          address & 0xff, 0))
+        read_cmd = bytes(
+            (
+                self.CMD_READ_HI_SPEED,
+                (address >> 16) & 0xFF,
+                (address >> 8) & 0xFF,
+                address & 0xFF,
+                0,
+            )
+        )
         return self._spi.exchange(read_cmd, length)
 
     def _verify_content(self, address: int, length: int, refbyte: int) -> None:
         data = self.read(address, length)
         count = data.count(refbyte)
         if count != length:
-            raise SerialFlashError('%d bytes are not erased' % (length-count))
+            raise SerialFlashError("%d bytes are not erased" % (length - count))
 
     def _wait_for_completion(self, times: Tuple[float, float]) -> None:
         typical_time, max_time = times
         timeout = time.time()
-        timeout += typical_time+max_time
+        timeout += typical_time + max_time
         cycle = 0
         while self.is_busy():
             # need to wait at least once
             if cycle and time.time() > timeout:
-                raise SerialFlashTimeout('Command timeout (%d cycles)' % cycle)
+                raise SerialFlashTimeout("Command timeout (%d cycles)" % cycle)
             time.sleep(typical_time)
             cycle += 1
 
-    def _erase_blocks(self, command: int, times: Tuple[float, float],
-                      start: int, end: int, size: int) -> None:
+    def _erase_blocks(
+        self, command: int, times: Tuple[float, float], start: int, end: int, size: int
+    ) -> None:
         """Erase one or more blocks."""
         raise NotImplementedError()
 
@@ -495,13 +531,13 @@ class _SpiFlashDevice(SerialFlash):
 class _Gen25FlashDevice(_SpiFlashDevice):
     """Generic flash device implementation for '25' series.
 
-       Most SPI flash devices share commands and parameters. Those devices
-       generally contains '25' in their reference. However, there are virtually
-       no '25' device that is fully compliant with any counterpart from
-       a concurrent manufacturer. Most differences are focused on lock and
-       security features. Here comes the mess... This class contains the most
-       common implementation for the basic feature, and each physical device
-       inherit from this class for feature specialization.
+    Most SPI flash devices share commands and parameters. Those devices
+    generally contains '25' in their reference. However, there are virtually
+    no '25' device that is fully compliant with any counterpart from
+    a concurrent manufacturer. Most differences are focused on lock and
+    security features. Here comes the mess... This class contains the most
+    common implementation for the basic feature, and each physical device
+    inherit from this class for feature specialization.
     """
 
     PAGE_DIV = 8
@@ -521,7 +557,7 @@ class _Gen25FlashDevice(_SpiFlashDevice):
     SR_BP1 = 0b00001000  # bit protect #1
     SR_BP2 = 0b00010000  # bit protect #2
     SR_BP3 = 0b00100000  # bit protect #3
-    SR_TBP = SR_BP3      # top-bottom protect bit
+    SR_TBP = SR_BP3  # top-bottom protect bit
     SR_SP = 0b01000000
     SR_BPL = 0b10000000
     SR_PROTECT_NONE = 0  # BP[0..2] = 0
@@ -549,22 +585,21 @@ class _Gen25FlashDevice(_SpiFlashDevice):
         return self._size
 
     def set_spi_frequency(self, freq: Optional[float] = None) -> None:
-        default_freq = self.SPI_FREQ_MAX*1E06
+        default_freq = self.SPI_FREQ_MAX * 1e06
         freq = min(default_freq, freq) if freq else default_freq
         self._spi.set_frequency(freq)
 
     def get_size(self, kind):
         try:
-            div = getattr(self, '%s_DIV' % kind.upper())
+            div = getattr(self, "%s_DIV" % kind.upper())
             return 1 << div
         except AttributeError:
-            raise SerialFlashNotSupported('%s size is not supported' %
-                                          kind.title())
+            raise SerialFlashNotSupported("%s size is not supported" % kind.title())
 
     @classmethod
     def get_erase_command(cls, block: str) -> str:
         """Get the erase command for a specified block kind"""
-        return getattr(cls, 'CMD_ERASE_%s' % block.upper())
+        return getattr(cls, "CMD_ERASE_%s" % block.upper())
 
     @classmethod
     def has_feature(cls, feature: int) -> bool:
@@ -573,7 +608,7 @@ class _Gen25FlashDevice(_SpiFlashDevice):
             # all '25' devices use the same class properties
             features = cls.FEATURES
         except AttributeError:
-            raise NotImplementedError('No FEATURES defined')
+            raise NotImplementedError("No FEATURES defined")
         return bool(features & feature)
 
     def get_timings(self, timing: str) -> Tuple[float, float]:
@@ -582,7 +617,7 @@ class _Gen25FlashDevice(_SpiFlashDevice):
             # all '25' devices use the same class properties
             timings = self.TIMINGS
         except AttributeError:
-            raise NotImplementedError('no TIMINGS defined')
+            raise NotImplementedError("no TIMINGS defined")
         return timings[timing]
 
     @classmethod
@@ -599,12 +634,16 @@ class _Gen25FlashDevice(_SpiFlashDevice):
 
     def unlock(self) -> None:
         self._enable_write()
-        wrsr_cmd = bytes((_Gen25FlashDevice.CMD_WRSR,
-                          _Gen25FlashDevice.SR_WEL |
-                          _Gen25FlashDevice.SR_PROTECT_NONE |
-                          _Gen25FlashDevice.SR_UNLOCK_PROTECT))
+        wrsr_cmd = bytes(
+            (
+                _Gen25FlashDevice.CMD_WRSR,
+                _Gen25FlashDevice.SR_WEL
+                | _Gen25FlashDevice.SR_PROTECT_NONE
+                | _Gen25FlashDevice.SR_UNLOCK_PROTECT,
+            )
+        )
         self._spi.exchange(wrsr_cmd)
-        duration = self.get_timings('lock')
+        duration = self.get_timings("lock")
         if any(duration):
             self._wait_for_completion(duration)
         status = self._read_status()
@@ -614,19 +653,18 @@ class _Gen25FlashDevice(_SpiFlashDevice):
     def is_busy(self) -> bool:
         return self._is_busy(self._read_status())
 
-    def write(self, address: int,
-              data: Union[bytes, bytearray, Iterable[int]]) -> None:
+    def write(self, address: int, data: Union[bytes, bytearray, Iterable[int]]) -> None:
         """Write a sequence of bytes, starting at the specified address."""
         length = len(data)
-        if address+length > len(self):
-            raise SerialFlashValueError('Cannot fit in flash area')
+        if address + length > len(self):
+            raise SerialFlashValueError("Cannot fit in flash area")
         if not isinstance(data, (bytes, bytearray)):
             data = bytes(data)
         pos = 0
-        page_size = self.get_size('page')
+        page_size = self.get_size("page")
         while pos < length:
-            size = min(length-pos, page_size)
-            self._write(address, data[pos:pos+size])
+            size = min(length - pos, page_size)
+            self._write(address, data[pos : pos + size])
             address += size
             pos += size
 
@@ -647,29 +685,36 @@ class _Gen25FlashDevice(_SpiFlashDevice):
 
     def _write(self, address: int, data: bytes) -> None:
         # take care not to roll over the end of the flash page
-        page_mask = self.get_size('page')-1
+        page_mask = self.get_size("page") - 1
         if address & page_mask:
-            up = (address+page_mask) & ~page_mask
-            count = min(len(data), up-address)
+            up = (address + page_mask) & ~page_mask
+            count = min(len(data), up - address)
             sequences = [(address, data[:count]), (up, data[count:])]
         else:
             sequences = [(address, data)]
         for addr, chunk in sequences:
             self._enable_write()
-            wcmd = bytearray((self.CMD_PROGRAM_PAGE,
-                              (addr >> 16) & 0xff, (addr >> 8) & 0xff,
-                              addr & 0xff))
+            wcmd = bytearray(
+                (
+                    self.CMD_PROGRAM_PAGE,
+                    (addr >> 16) & 0xFF,
+                    (addr >> 8) & 0xFF,
+                    addr & 0xFF,
+                )
+            )
             wcmd.extend(chunk)
             self._spi.exchange(wcmd)
-            self._wait_for_completion(self.get_timings('page'))
+            self._wait_for_completion(self.get_timings("page"))
 
-    def _erase_blocks(self, command: int, times: Tuple[float, float],
-                      start: int, end: int, size: int) -> None:
+    def _erase_blocks(
+        self, command: int, times: Tuple[float, float], start: int, end: int, size: int
+    ) -> None:
         """Erase one or more blocks."""
         while start < end:
             self._enable_write()
-            cmd = bytes((command, (start >> 16) & 0xff,
-                         (start >> 8) & 0xff, start & 0xff))
+            cmd = bytes(
+                (command, (start >> 16) & 0xFF, (start >> 8) & 0xFF, start & 0xFF)
+            )
             self._spi.exchange(cmd)
             self._wait_for_completion(times)
             start += size
@@ -687,20 +732,24 @@ class Sst25FlashDevice(_Gen25FlashDevice):
     """SST25 flash device implementation"""
 
     JEDEC_ID = 0xBF
-    DEVICES = {0x25: 'SST25'}
+    DEVICES = {0x25: "SST25"}
     CMD_PROGRAM_BYTE = 0x02
     CMD_PROGRAM_WORD = 0xAD  # Auto address increment (for write command)
     CMD_WRITE_STATUS_REGISTER = 0x01
     SST25_AAI = 0b01000000  # AAI mode activation flag
     SIZES = {0x41: 2 << 20, 0x4A: 4 << 20}
     SPI_FREQ_MAX = 66  # MHz
-    TIMINGS = {'subsector': (0.025, 0.025),  # 25 ms
-               'hsector': (0.025, 0.025),  # 25 ms
-               'sector': (0.025, 0.025),  # 25 ms
-               'lock': (0.0, 0.0)}  # immediate
-    FEATURES = (SerialFlash.FEAT_SECTERASE |
-                SerialFlash.FEAT_SUBSECTERASE |
-                SerialFlash.FEAT_HSECTERASE)
+    TIMINGS = {
+        "subsector": (0.025, 0.025),  # 25 ms
+        "hsector": (0.025, 0.025),  # 25 ms
+        "sector": (0.025, 0.025),  # 25 ms
+        "lock": (0.0, 0.0),
+    }  # immediate
+    FEATURES = (
+        SerialFlash.FEAT_SECTERASE
+        | SerialFlash.FEAT_SUBSECTERASE
+        | SerialFlash.FEAT_HSECTERASE
+    )
 
     def __init__(self, spi, jedec):
         super(Sst25FlashDevice, self).__init__(spi)
@@ -711,18 +760,17 @@ class Sst25FlashDevice(_Gen25FlashDevice):
         self._size = Sst25FlashDevice.SIZES[capacity]
 
     def __str__(self):
-        return 'SST %s %s' % \
-            (self._device, pretty_size(self._size, lim_m=1 << 20))
+        return "SST %s %s" % (self._device, pretty_size(self._size, lim_m=1 << 20))
 
     def write(self, address: int, data: Iterable[int]) -> None:
         """SST25 uses a very specific implementation to write data. It offers
-           very poor performances, because the device lacks an internal buffer
-           which translates into an ultra-heavy load on SPI bus. However, the
-           device offers lightning-speed flash erasure.
-           Although the device supports byte-aligned write requests, the
-           current implementation only support half-word write requests."""
-        if address+len(data) > len(self):
-            raise SerialFlashValueError('Cannot fit in flash area')
+        very poor performances, because the device lacks an internal buffer
+        which translates into an ultra-heavy load on SPI bus. However, the
+        device offers lightning-speed flash erasure.
+        Although the device supports byte-aligned write requests, the
+        current implementation only support half-word write requests."""
+        if address + len(data) > len(self):
+            raise SerialFlashValueError("Cannot fit in flash area")
         if not isinstance(data, (bytes, bytearray)):
             data = bytes(data)
         length = len(data)
@@ -730,11 +778,16 @@ class Sst25FlashDevice(_Gen25FlashDevice):
             raise SerialFlashNotSupported("Alignement/size not supported")
         self._unprotect()
         self._enable_write()
-        aai_cmd = bytes((Sst25FlashDevice.CMD_PROGRAM_WORD,
-                         (address >> 16) & 0xff,
-                         (address >> 8) & 0xff,
-                         address & 0xff,
-                         data.pop(0), data.pop(0)))
+        aai_cmd = bytes(
+            (
+                Sst25FlashDevice.CMD_PROGRAM_WORD,
+                (address >> 16) & 0xFF,
+                (address >> 8) & 0xFF,
+                address & 0xFF,
+                data.pop(0),
+                data.pop(0),
+            )
+        )
         offset = 0
         while True:
             offset += 2
@@ -743,8 +796,9 @@ class Sst25FlashDevice(_Gen25FlashDevice):
                 time.sleep(0.01)  # 10 ms
             if not data:
                 break
-            aai_cmd = bytes((Sst25FlashDevice.CMD_PROGRAM_WORD,
-                             data.pop(0), data.pop(0)))
+            aai_cmd = bytes(
+                (Sst25FlashDevice.CMD_PROGRAM_WORD, data.pop(0), data.pop(0))
+            )
         self._disable_write()
 
     def _unprotect(self):
@@ -760,7 +814,7 @@ class S25FlFlashDevice(_Gen25FlashDevice):
     """Spansion S25FL flash device implementation"""
 
     JEDEC_ID = 0x01
-    DEVICES = {0x02: 'S25FL'}
+    DEVICES = {0x02: "S25FL"}
     SIZES = {0x15: 4 << 20, 0x16: 8 << 20}
     CR_FREEZE = 0x01
     CR_QUAD = 0x02
@@ -770,13 +824,14 @@ class S25FlFlashDevice(_Gen25FlashDevice):
     CR_TBPROT = 0x20
     CMD_READ_CONFIG = 0x35
     SPI_FREQ_MAX = 104  # MHz (P series only)
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.2, 0.8),  # 200/800 ms
-               'sector': (0.5, 2.0),  # 0.5/2 s
-               'bulk': (32, 64),  # seconds
-               'lock': (0.0015, 0.1)}  # 1.5/100 ms
-    FEATURES = (SerialFlash.FEAT_SECTERASE |
-                SerialFlash.FEAT_SUBSECTERASE)
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.2, 0.8),  # 200/800 ms
+        "sector": (0.5, 2.0),  # 0.5/2 s
+        "bulk": (32, 64),  # seconds
+        "lock": (0.0015, 0.1),
+    }  # 1.5/100 ms
+    FEATURES = SerialFlash.FEAT_SECTERASE | SerialFlash.FEAT_SUBSECTERASE
 
     def __init__(self, spi, jedec):
         super(S25FlFlashDevice, self).__init__(spi)
@@ -787,8 +842,7 @@ class S25FlFlashDevice(_Gen25FlashDevice):
         self._size = S25FlFlashDevice.SIZES[capacity]
 
     def __str__(self):
-        return 'Spansion %s %s' % \
-            (self._device, pretty_size(self._size, lim_m=1 << 20))
+        return "Spansion %s %s" % (self._device, pretty_size(self._size, lim_m=1 << 20))
 
     def can_erase(self, address: int, length: int):
         # we first need to check the current configuration register, as a
@@ -797,19 +851,19 @@ class S25FlFlashDevice(_Gen25FlashDevice):
         config = self._spi.exchange(readcfg_cmd, 1)[0]
         if config & S25FlFlashDevice.CR_TBPARM:
             # "parameter zone" is defined in the high sectors
-            border = len(self)-2*self.get_size('sector')
-            ls_size = self.get_size('sector')
-            rs_size = self.get_size('subsector')
+            border = len(self) - 2 * self.get_size("sector")
+            ls_size = self.get_size("sector")
+            rs_size = self.get_size("subsector")
         else:
             # "parameter zone" is defined in the low sectors
-            border = 2*self.get_size('sector')
-            ls_size = self.get_size('subsector')
-            rs_size = self.get_size('sector')
+            border = 2 * self.get_size("sector")
+            ls_size = self.get_size("subsector")
+            rs_size = self.get_size("sector")
         start = address
-        fend = address+length
+        fend = address + length
         # sanity check
         if (start > fend) or (fend > len(self)):
-            raise SerialFlashValueError('Out of flash storage range')
+            raise SerialFlashValueError("Out of flash storage range")
         if fend > border > start:
             end = border
         else:
@@ -820,15 +874,17 @@ class S25FlFlashDevice(_Gen25FlashDevice):
             size = ls_size
         while True:  # expect 1 (no border cross) or 2 loops (border cross)
             # sanity check
-            if start & (size-1):
+            if start & (size - 1):
                 # start address should be aligned on a (sub)sector boundary
-                raise SerialFlashValueError('Start address not aligned on a '
-                                            'sector boundary')
+                raise SerialFlashValueError(
+                    "Start address not aligned on a " "sector boundary"
+                )
             # sanity check
-            if (((end-start)-1) & (size-1)) != (size-1):
+            if (((end - start) - 1) & (size - 1)) != (size - 1):
                 # length should be a multiple of a (sub)sector
-                raise SerialFlashValueError('End address not aligned on a '
-                                            'sector boundary')
+                raise SerialFlashValueError(
+                    "End address not aligned on a " "sector boundary"
+                )
             # stop condition
             if (start >= border) or (end >= fend):
                 break
@@ -841,14 +897,16 @@ class M25PxFlashDevice(_Gen25FlashDevice):
     """Numonix M25P/M25PX flash device implementation"""
 
     JEDEC_ID = 0x20
-    DEVICES = {0x71: 'M25P', 0x20: 'M25PX'}
+    DEVICES = {0x71: "M25P", 0x20: "M25PX"}
     SIZES = {0x15: 2 << 20, 0x16: 4 << 20, 0x17: 8 << 20, 0x18: 16 << 20}
     SPI_FREQ_MAX = 75  # MHz (P series only)
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.150, 0.150),  # 150/150 ms
-               'sector': (3.0, 3.0),  # 3/3 s
-               'bulk': (32, 64),  # seconds
-               'lock': (0.0015, 0.003)}  # 1.5/3 ms
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.150, 0.150),  # 150/150 ms
+        "sector": (3.0, 3.0),  # 3/3 s
+        "bulk": (32, 64),  # seconds
+        "lock": (0.0015, 0.003),
+    }  # 1.5/3 ms
     FEATURES = SerialFlash.FEAT_SECTERASE | SerialFlash.FEAT_SUBSECTERASE
 
     def __init__(self, spi, jedec):
@@ -860,31 +918,45 @@ class M25PxFlashDevice(_Gen25FlashDevice):
         self._size = M25PxFlashDevice.SIZES[capacity]
 
     def __str__(self):
-        return 'Numonix %s%d %s' % \
-            (self._device, len(self) >> 17,
-             pretty_size(self._size, lim_m=1 << 20))
+        return "Numonix %s%d %s" % (
+            self._device,
+            len(self) >> 17,
+            pretty_size(self._size, lim_m=1 << 20),
+        )
 
 
 class W25xFlashDevice(_Gen25FlashDevice):
     """Winbond W25Q/W25X flash device implementation"""
 
     JEDEC_ID = 0xEF
-    DEVICES = {0x30: 'W25X', 0x40: 'W25Q'}
-    SIZES = {0x11: 1 << 17, 0x12: 1 << 18, 0x13: 1 << 19, 0x14: 1 << 20,
-             0x15: 2 << 20, 0x16: 4 << 20, 0x17: 8 << 20, 0x18: 16 << 20}
+    DEVICES = {0x30: "W25X", 0x40: "W25Q"}
+    SIZES = {
+        0x11: 1 << 17,
+        0x12: 1 << 18,
+        0x13: 1 << 19,
+        0x14: 1 << 20,
+        0x15: 2 << 20,
+        0x16: 4 << 20,
+        0x17: 8 << 20,
+        0x18: 16 << 20,
+    }
     SPI_FREQ_MAX = 104  # MHz
     CMD_READ_UID = 0x4B
     UID_LEN = 0x8  # 64 bits
     READ_UID_WIDTH = 4  # 4 dummy bytes
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.200, 0.200),  # 200/200 ms
-               'sector': (1.0, 1.0),  # 1/1 s
-               'bulk': (32, 64),  # seconds
-               'lock': (0.05, 0.1),  # 50/100 ms
-               'chip': (4, 11)}
-    FEATURES = (SerialFlash.FEAT_SECTERASE |
-                SerialFlash.FEAT_SUBSECTERASE |
-                SerialFlash.FEAT_CHIPERASE)
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.200, 0.200),  # 200/200 ms
+        "sector": (1.0, 1.0),  # 1/1 s
+        "bulk": (32, 64),  # seconds
+        "lock": (0.05, 0.1),  # 50/100 ms
+        "chip": (4, 11),
+    }
+    FEATURES = (
+        SerialFlash.FEAT_SECTERASE
+        | SerialFlash.FEAT_SUBSECTERASE
+        | SerialFlash.FEAT_CHIPERASE
+    )
 
     def __init__(self, spi, jedec):
         super(W25xFlashDevice, self).__init__(spi)
@@ -895,9 +967,11 @@ class W25xFlashDevice(_Gen25FlashDevice):
         self._size = W25xFlashDevice.SIZES[capacity]
 
     def __str__(self):
-        return 'Winbond %s%d %s' % \
-            (self._device, len(self) >> 17,
-             pretty_size(self._size, lim_m=1 << 20))
+        return "Winbond %s%d %s" % (
+            self._device,
+            len(self) >> 17,
+            pretty_size(self._size, lim_m=1 << 20),
+        )
 
     def _erase_chip(self, command: int, times: Tuple[float, float]):
         """Erase an entire chip"""
@@ -911,18 +985,22 @@ class Mx25lFlashDevice(_Gen25FlashDevice):
     """Macronix MX25L flash device implementation"""
 
     JEDEC_ID = 0xC2
-    DEVICES = {0x9E: 'MX25D', 0x26: 'MX25E', 0x20: 'MX25E06'}
+    DEVICES = {0x9E: "MX25D", 0x26: "MX25E", 0x20: "MX25E06"}
     SIZES = {0x15: 2 << 20, 0x16: 4 << 20, 0x17: 8 << 20, 0x18: 16 << 20}
     SPI_FREQ_MAX = 104  # MHz
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.300, 0.300),  # 300/300 ms
-               'hsector': (2.0, 2.0),  # 2/2 s
-               'sector': (2.0, 2.0),  # 2/2 s
-               'bulk': (32, 64),  # seconds
-               'lock': (0.0015, 0.003)}  # 1.5/3 ms
-    FEATURES = (SerialFlash.FEAT_SECTERASE |
-                SerialFlash.FEAT_HSECTERASE |
-                SerialFlash.FEAT_SUBSECTERASE)
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.300, 0.300),  # 300/300 ms
+        "hsector": (2.0, 2.0),  # 2/2 s
+        "sector": (2.0, 2.0),  # 2/2 s
+        "bulk": (32, 64),  # seconds
+        "lock": (0.0015, 0.003),
+    }  # 1.5/3 ms
+    FEATURES = (
+        SerialFlash.FEAT_SECTERASE
+        | SerialFlash.FEAT_HSECTERASE
+        | SerialFlash.FEAT_SUBSECTERASE
+    )
     CMD_UNLOCK = 0xF3
     CMD_GBULK = 0x98
     CMD_RDBLOCK = 0xFB
@@ -941,33 +1019,37 @@ class Mx25lFlashDevice(_Gen25FlashDevice):
         self._device = self.DEVICES[device]
 
     def __str__(self):
-        return 'Macronix %s%d %s' % \
-            (self._device, len(self) >> 17,
-             pretty_size(self._size, lim_m=1 << 20))
+        return "Macronix %s%d %s" % (
+            self._device,
+            len(self) >> 17,
+            pretty_size(self._size, lim_m=1 << 20),
+        )
 
     def unlock(self):
-        if self._device.endswith('D'):
+        if self._device.endswith("D"):
             unlock = self.CMD_UNLOCK
         else:
             unlock = self.CMD_GBULK
         self._enable_write()
         wcmd = bytes((unlock,))
         self._spi.exchange(wcmd)
-        self._wait_for_completion(self.get_timings('page'))
+        self._wait_for_completion(self.get_timings("page"))
 
 
 class En25qFlashDevice(_Gen25FlashDevice):
     """EON EN25Q flash device implementation"""
 
     JEDEC_ID = 0x1C
-    DEVICES = {0x30: 'EN25Q'}
+    DEVICES = {0x30: "EN25Q"}
     SIZES = {0x15: 2 << 20, 0x16: 4 << 20, 0x17: 8 << 20}
     SPI_FREQ_MAX = 100  # MHz
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.300, 0.300),  # 300/300 ms
-               'sector': (2.0, 2.0),  # 2/2 s
-               'bulk': (32, 64),  # seconds
-               'lock': (0.0015, 0.003)}  # 1.5/3 ms
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.300, 0.300),  # 300/300 ms
+        "sector": (2.0, 2.0),  # 2/2 s
+        "bulk": (32, 64),  # seconds
+        "lock": (0.0015, 0.003),
+    }  # 1.5/3 ms
     FEATURES = SerialFlash.FEAT_SECTERASE | SerialFlash.FEAT_SUBSECTERASE
 
     def __init__(self, spi, jedec):
@@ -979,9 +1061,11 @@ class En25qFlashDevice(_Gen25FlashDevice):
         self._device = self.DEVICES[device]
 
     def __str__(self):
-        return 'Eon %s%d %s' % \
-            (self._device, len(self) >> 17,
-             pretty_size(self._size, lim_m=1 << 20))
+        return "Eon %s%d %s" % (
+            self._device,
+            len(self) >> 17,
+            pretty_size(self._size, lim_m=1 << 20),
+        )
 
 
 class At25FlashDevice(_Gen25FlashDevice):
@@ -991,15 +1075,19 @@ class At25FlashDevice(_Gen25FlashDevice):
     SIZES = {0x46: 2 << 20, 0x47: 4 << 20, 0x48: 8 << 20, 0x84: 7 << 16}
     SPI_FREQ_MAX = 85  # MHz
     CHIP_DIV = 7 << 16
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.200, 0.200),  # 200/200 ms
-               'sector': (0.950, 0.950),  # 950/950 ms
-               'bulk': (32, 64),  # seconds
-               'lock': (0.0015, 0.003),
-               'chip': (4, 11)}  # 1.5/3 ms
-    FEATURES = (SerialFlash.FEAT_SECTERASE |
-                SerialFlash.FEAT_SUBSECTERASE |
-                SerialFlash.FEAT_CHIPERASE)
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.200, 0.200),  # 200/200 ms
+        "sector": (0.950, 0.950),  # 950/950 ms
+        "bulk": (32, 64),  # seconds
+        "lock": (0.0015, 0.003),
+        "chip": (4, 11),
+    }  # 1.5/3 ms
+    FEATURES = (
+        SerialFlash.FEAT_SECTERASE
+        | SerialFlash.FEAT_SUBSECTERASE
+        | SerialFlash.FEAT_CHIPERASE
+    )
 
     CMD_PROTECT_SOFT_WRITE = 0x36
     CMD_PROTECT_LOCK_WRITE = 0x33
@@ -1016,12 +1104,14 @@ class At25FlashDevice(_Gen25FlashDevice):
             raise SerialFlashUnknownJedec(jedec)
         capacity = jedec[1]
         self._size = At25FlashDevice.SIZES[capacity]
-        self._device = 'AT25DF'
+        self._device = "AT25DF"
 
     def __str__(self):
-        return 'Atmel %s%d %s' % \
-            (self._device, len(self) >> 17,
-             pretty_size(self._size, lim_m=1 << 20))
+        return "Atmel %s%d %s" % (
+            self._device,
+            len(self) >> 17,
+            pretty_size(self._size, lim_m=1 << 20),
+        )
 
     def _erase_chip(self, command: int, times: Tuple[float, float]):
         """Erase an entire chip"""
@@ -1054,19 +1144,19 @@ class At25FlashDevice(_Gen25FlashDevice):
 
     def _lock(self, command, address, length):
         # caller should have check address & length alignment
-        sector_size = self.get_size('sector')
-        sector_mask = ~(self.get_size('sector')-1)
+        sector_size = self.get_size("sector")
+        sector_mask = ~(self.get_size("sector") - 1)
         start = address & sector_mask
-        end = (address+length) & sector_mask
+        end = (address + length) & sector_mask
         for addr in range(start, end, sector_size):
             self._enable_write()
-            wcmd = bytearray((command,
-                              (addr >> 16) & 0xff, (addr >> 8) & 0xff,
-                              addr & 0xff))
+            wcmd = bytearray(
+                (command, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF)
+            )
             if self.CMD_PROTECT_LOCK_WRITE == command:
                 wcmd.append(self.ASSERT_LOCK_PROTECT)
             self._spi.exchange(wcmd)
-            self._wait_for_completion(self.get_timings('page'))
+            self._wait_for_completion(self.get_timings("page"))
 
 
 class AT25XE041BFlashDevice(_Gen25FlashDevice):
@@ -1075,19 +1165,22 @@ class AT25XE041BFlashDevice(_Gen25FlashDevice):
     JEDEC_ID = 0x1F
     SIZES = {0x44: 4 << 17}
     SPI_FREQ_MAX = 85  # MHz
-    TIMINGS = {'page': (0.0015, 0.003),  # 1.5/3 ms
-               'subsector': (0.045, 0.060),  # 200/200 ms
-               'hsector': (0.360, 0.450),  # 360/450 ms
-               'sector': (0.720, 0.850),  # 950/950 ms
-               'bulk': (32, 64),  # seconds
-               'lock': (0.0015, 0.003),
-               'chip': (4, 11)}  # 1.5/3 ms
+    TIMINGS = {
+        "page": (0.0015, 0.003),  # 1.5/3 ms
+        "subsector": (0.045, 0.060),  # 200/200 ms
+        "hsector": (0.360, 0.450),  # 360/450 ms
+        "sector": (0.720, 0.850),  # 950/950 ms
+        "bulk": (32, 64),  # seconds
+        "lock": (0.0015, 0.003),
+        "chip": (4, 11),
+    }  # 1.5/3 ms
 
-
-    FEATURES = (SerialFlash.FEAT_SECTERASE |
-                SerialFlash.FEAT_SUBSECTERASE |
-                SerialFlash.FEAT_CHIPERASE |
-                SerialFlash.FEAT_HSECTERASE)
+    FEATURES = (
+        SerialFlash.FEAT_SECTERASE
+        | SerialFlash.FEAT_SUBSECTERASE
+        | SerialFlash.FEAT_CHIPERASE
+        | SerialFlash.FEAT_HSECTERASE
+    )
 
     CMD_PROTECT_SOFT_WRITE = 0x36
     CMD_PROTECT_LOCK_WRITE = 0x33
@@ -1108,13 +1201,12 @@ class AT25XE041BFlashDevice(_Gen25FlashDevice):
         if not AT25XE041BFlashDevice.match(jedec):
             raise SerialFlashUnknownJedec(jedec)
         capacity = jedec[1]
-        self._device = 'AT25XE041B'
+        self._device = "AT25XE041B"
         self._size = AT25XE041BFlashDevice.SIZES[capacity]
         print(self._size)
 
     def __str__(self):
-        return 'Adesto %s %s' % \
-            (self._device, pretty_size(self._size, lim_m=1 << 20))
+        return "Adesto %s %s" % (self._device, pretty_size(self._size, lim_m=1 << 20))
 
     @classmethod
     def match(cls, jedec):
@@ -1122,7 +1214,7 @@ class AT25XE041BFlashDevice(_Gen25FlashDevice):
         manufacturer, capacity, revision = jedec[:3]
         if manufacturer != cls.JEDEC_ID:
             return False
-        if revision < 1 :
+        if revision < 1:
             return False
         if capacity not in cls.SIZES:
             return False
@@ -1140,26 +1232,26 @@ class AT25XE041BFlashDevice(_Gen25FlashDevice):
 
     def _lock(self, command, address, length):
         # caller should have check address & length alignment
-        sector_size = self.get_size('sector')
-        sector_mask = ~(self.get_size('sector')-1)
+        sector_size = self.get_size("sector")
+        sector_mask = ~(self.get_size("sector") - 1)
         start = address & sector_mask
-        end = (address+length) & sector_mask
+        end = (address + length) & sector_mask
         for addr in range(start, end, sector_size):
             self._enable_write()
-            wcmd = bytearray((command,
-                              (addr >> 16) & 0xff,
-                              (addr >> 8) & 0xff,
-                              addr & 0xff))
+            wcmd = bytearray(
+                (command, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF)
+            )
             if self.CMD_PROTECT_LOCK_WRITE == command:
                 wcmd.append(self.ASSERT_LOCK_PROTECT)
             self._spi.exchange(wcmd)
-            self._wait_for_completion(self.get_timings('page'))
+            self._wait_for_completion(self.get_timings("page"))
+
 
 class At45FlashDevice(_SpiFlashDevice):
     """Flash device implementation for AT45 (Atmel/Adesto)
 
-       Except READ commands, the old AT45 series use a fully different
-       command set than '25' series.
+    Except READ commands, the old AT45 series use a fully different
+    command set than '25' series.
     """
 
     # for device ranging from 1Mb to 64Mb
@@ -1169,48 +1261,60 @@ class At45FlashDevice(_SpiFlashDevice):
     CHIP_DIV = [17, 18, 19, 20, 21, 22, 23]
     JEDEC_ID = 0x1F
     SPI_FREQS_MAX = [66, 85, 85, 133, 85, 85, 85]
-    TIMINGS = {'page': [(0.002, 0.004),
-                        (0.0015, 0.003),
-                        (0.0015, 0.003),
-                        (0.002, 0.004),
-                        (0.003, 0.004),
-                        (0.003, 0.004),
-                        (0.0015, 0.005)],
-               # do not support page erasure
-               'subsector': [(0.018, 0.035),
-                             (0.025, 0.035),
-                             (0.030, 0.035),
-                             (0.030, 0.075),
-                             (0.045, 0.100),
-                             (0.045, 0.100),
-                             (0.025, 0.050)],
-               'sector': [(0.400, 0.700),
-                          (0.350, 0.550),
-                          (0.700, 1.100),
-                          (0.700, 1.300),
-                          (1.400, 2.000),
-                          (0.700, 1.400),
-                          (2.500, 6.500)],
-               'bulk': [(1.2, 3.0),
-                        (3.0, 4.0),
-                        (5.0, 17.0),
-                        (10.0, 20.0),
-                        (22.0, 40.0),
-                        (45.0, 80.0),
-                        (80.0, 208.0)],
-               'lock': [(1.0, 2.0),
-                        (1.0, 2.0),
-                        (1.0, 2.0),
-                        (1.0, 2.0),
-                        (1.0, 2.0),
-                        (1.0, 2.0),
-                        (1.0, 2.0)]}
+    TIMINGS = {
+        "page": [
+            (0.002, 0.004),
+            (0.0015, 0.003),
+            (0.0015, 0.003),
+            (0.002, 0.004),
+            (0.003, 0.004),
+            (0.003, 0.004),
+            (0.0015, 0.005),
+        ],
+        # do not support page erasure
+        "subsector": [
+            (0.018, 0.035),
+            (0.025, 0.035),
+            (0.030, 0.035),
+            (0.030, 0.075),
+            (0.045, 0.100),
+            (0.045, 0.100),
+            (0.025, 0.050),
+        ],
+        "sector": [
+            (0.400, 0.700),
+            (0.350, 0.550),
+            (0.700, 1.100),
+            (0.700, 1.300),
+            (1.400, 2.000),
+            (0.700, 1.400),
+            (2.500, 6.500),
+        ],
+        "bulk": [
+            (1.2, 3.0),
+            (3.0, 4.0),
+            (5.0, 17.0),
+            (10.0, 20.0),
+            (22.0, 40.0),
+            (45.0, 80.0),
+            (80.0, 208.0),
+        ],
+        "lock": [
+            (1.0, 2.0),
+            (1.0, 2.0),
+            (1.0, 2.0),
+            (1.0, 2.0),
+            (1.0, 2.0),
+            (1.0, 2.0),
+            (1.0, 2.0),
+        ],
+    }
     FEATURES = SerialFlash.FEAT_SECTERASE | SerialFlash.FEAT_SUBSECTERASE
 
     DEVICE_ID = 0x01
     DEVICE_MASK = 0x07
     DEVICE_SHIFT = 5
-    CAPACITY_MASK = 0x1f
+    CAPACITY_MASK = 0x1F
     CAPACITY_SHIFT = 0
     SR_READY = 0x80
     SR_COMP = 0x40
@@ -1253,15 +1357,15 @@ class At45FlashDevice(_SpiFlashDevice):
             raise SerialFlashUnknownJedec(jedec)
         code = jedec[1]
         capacity = (code >> self.CAPACITY_SHIFT) & self.CAPACITY_MASK
-        self._devidx = capacity-2
+        self._devidx = capacity - 2
         assert 0 <= self._devidx < len(self.PAGE_DIV)
-        self._size = self.get_size('chip')
-        self._device = 'AT45DB'
-        self._spi.set_frequency(self.SPI_FREQS_MAX[self._devidx]*1E06)
+        self._size = self.get_size("chip")
+        self._device = "AT45DB"
+        self._spi.set_frequency(self.SPI_FREQS_MAX[self._devidx] * 1e06)
         self._fix_page_size()
 
     def set_spi_frequency(self, freq=None):
-        default_freq = self.SPI_FREQS_MAX[self._devidx]*1E06
+        default_freq = self.SPI_FREQS_MAX[self._devidx] * 1e06
         freq = min(default_freq, freq) if freq else default_freq
         self._spi.set_frequency(freq)
 
@@ -1269,21 +1373,19 @@ class At45FlashDevice(_SpiFlashDevice):
         return self._size
 
     def __str__(self):
-        return 'Atmel %s %s' % \
-            (self._device, pretty_size(self._size, lim_m=1 << 20))
+        return "Atmel %s %s" % (self._device, pretty_size(self._size, lim_m=1 << 20))
 
     def get_size(self, kind):
         try:
-            divs = getattr(self, '%s_DIV' % kind.upper())
+            divs = getattr(self, "%s_DIV" % kind.upper())
             return 1 << divs[self._devidx]
         except AttributeError:
-            raise SerialFlashNotSupported('%s erase is not supported' %
-                                          kind.title())
+            raise SerialFlashNotSupported("%s erase is not supported" % kind.title())
 
     @classmethod
     def get_erase_command(cls, block):
         """Get the erase command for a specified block kind"""
-        return getattr(cls, 'CMD_ERASE_%s' % block.upper())
+        return getattr(cls, "CMD_ERASE_%s" % block.upper())
 
     @classmethod
     def has_feature(cls, feature):
@@ -1304,17 +1406,21 @@ class At45FlashDevice(_SpiFlashDevice):
         if device != cls.DEVICE_ID:
             return False
         capacity = (deva >> cls.CAPACITY_SHIFT) & cls.CAPACITY_MASK
-        if (capacity < 2) or ((capacity-2) >= len(cls.PAGE_DIV)):
+        if (capacity < 2) or ((capacity - 2) >= len(cls.PAGE_DIV)):
             return False
         return True
 
     def unlock(self):
-        wcmd = bytes((self.CMD_PROTECT_WRITE,
-                      self.SECTOR_PROTECT_PREFIX_A,
-                      self.SECTOR_PROTECT_PREFIX_B,
-                      self.SECTOR_PROTECT_DISABLE))
+        wcmd = bytes(
+            (
+                self.CMD_PROTECT_WRITE,
+                self.SECTOR_PROTECT_PREFIX_A,
+                self.SECTOR_PROTECT_PREFIX_B,
+                self.SECTOR_PROTECT_DISABLE,
+            )
+        )
         self._spi.exchange(wcmd)
-        duration = self.get_timings('lock')
+        duration = self.get_timings("lock")
         if any(duration):
             self._wait_for_completion(duration)
 
@@ -1324,14 +1430,15 @@ class At45FlashDevice(_SpiFlashDevice):
     def _erase_blocks(self, command, times, start, end, size):
         """Erase one or more blocks"""
         while start < end:
-            wcmd = bytes((command, (start >> 16) & 0xff,
-                          (start >> 8) & 0xff, start & 0xff))
+            wcmd = bytes(
+                (command, (start >> 16) & 0xFF, (start >> 8) & 0xFF, start & 0xFF)
+            )
             self._spi.exchange(wcmd)
             self._wait_for_completion(times)
             # very special case for first sector which is split in two
             # parts: 4KiB + 60KiB
             if (start == 0) and (command == self.CMD_ERASE_SECTOR):
-                start += self.get_size('subsector')
+                start += self.get_size("subsector")
                 continue
             start += size
 
@@ -1346,64 +1453,71 @@ class At45FlashDevice(_SpiFlashDevice):
     def _is_busy(cls, status):
         return not bool(status & cls.SR_READY)
 
-    def write(self, address: int,
-              data: Union[bytes, bytearray, Iterable[int]]) -> None:
+    def write(self, address: int, data: Union[bytes, bytearray, Iterable[int]]) -> None:
         """Write a sequence of bytes, starting at the specified address."""
         length = len(data)
-        if address+length > len(self):
-            raise SerialFlashValueError('Cannot fit in flash area')
+        if address + length > len(self):
+            raise SerialFlashValueError("Cannot fit in flash area")
         if not isinstance(data, (bytes, bytearray)):
             data = bytes(data)
         pos = 0
-        page_size = self.get_size('page')
+        page_size = self.get_size("page")
         while pos < length:
-            boffset = (address+pos) & (page_size-1)
-            poffset = (address+pos) & ~(page_size-1)
+            boffset = (address + pos) & (page_size - 1)
+            poffset = (address + pos) & ~(page_size - 1)
             # first step: write data to the device RAM buffer
-            count = min(length-pos, page_size-boffset)
-            buf = bytearray([0xFF]*boffset)
-            buf.extend(data[pos:pos+count])
-            pad = bytes([0xFF]*(page_size-count-boffset))
+            count = min(length - pos, page_size - boffset)
+            buf = bytearray([0xFF] * boffset)
+            buf.extend(data[pos : pos + count])
+            pad = bytes([0xFF] * (page_size - count - boffset))
             buf.extend(pad)
             assert len(buf) == page_size
             wcmd = bytearray((self.CMD_WRITE_BUFFER1, 0, 0, 0))
             wcmd.extend(buf)
             self._spi.exchange(wcmd)
-            self._wait_for_completion(self.get_timings('page'))
+            self._wait_for_completion(self.get_timings("page"))
             # second step: commit device buffer into flash cells
-            wcmd = bytes((self.CMD_COMMIT_BUFFER1,
-                          (poffset >> 16) & 0xff, (poffset >> 8) & 0xff,
-                          poffset & 0xff))
+            wcmd = bytes(
+                (
+                    self.CMD_COMMIT_BUFFER1,
+                    (poffset >> 16) & 0xFF,
+                    (poffset >> 8) & 0xFF,
+                    poffset & 0xFF,
+                )
+            )
             self._spi.exchange(wcmd)
-            self._wait_for_completion(self.get_timings('page'))
+            self._wait_for_completion(self.get_timings("page"))
             pos += page_size
 
     def _fix_page_size(self):
         """Fix AT45 page size to 512 bytes, rather than the default 528 bytes
-           per page. This implementation is not able to cope with non 2^N bytes
-           per page, which is an AT45 oddity in serial flash world
+        per page. This implementation is not able to cope with non 2^N bytes
+        per page, which is an AT45 oddity in serial flash world
         """
         status = self._read_status()
         if status & self.SR_PAGE_SIZE_FLAG:
             # nothing to do, alreay using 2^N page size mode
             return
-        wcmd = bytes((0x3d, 0x2a, 0x80, 0xa6))
+        wcmd = bytes((0x3D, 0x2A, 0x80, 0xA6))
         self._spi.exchange(wcmd)
-        raise IOError("Please power-cycle the device to enable "
-                      "binary page size mode")
+        raise IOError(
+            "Please power-cycle the device to enable " "binary page size mode"
+        )
 
 
 class N25QFlashDevice(_Gen25FlashDevice):
     """Micron N25Q flash device implementation"""
 
     JEDEC_ID = 0x20
-    DEVICES = {0xBA: 'N25Q'}
+    DEVICES = {0xBA: "N25Q"}
     SIZES = {0x15: 2 << 20, 0x16: 4 << 20, 0x17: 8 << 20, 0x18: 16 << 20}
     SPI_FREQ_MAX = 105  # MHz, using 3 dummy bytes
-    TIMINGS = {'page': (0.0005, 0.005),  # 0.5/5 ms
-               'subsector': (0.3, 3.0),  # 300/3000 ms
-               'sector': (0.7, 3.0),  # 700/3000 ms
-               'bulk': (60, 120)}  # seconds
+    TIMINGS = {
+        "page": (0.0005, 0.005),  # 0.5/5 ms
+        "subsector": (0.3, 3.0),  # 300/3000 ms
+        "sector": (0.7, 3.0),  # 700/3000 ms
+        "bulk": (60, 120),
+    }  # seconds
     FEATURES = SerialFlash.FEAT_SECTERASE | SerialFlash.FEAT_SUBSECTERASE
     CMD_WRLR = 0xE5
     SECTOR_LOCK_DOWN = 1
@@ -1418,18 +1532,23 @@ class N25QFlashDevice(_Gen25FlashDevice):
         self._device = self.DEVICES[device]
 
     def __str__(self):
-        return 'Micron %s%03d %s' % \
-            (self._device, len(self) >> 17,
-             pretty_size(self._size, lim_m=1 << 20))
+        return "Micron %s%03d %s" % (
+            self._device,
+            len(self) >> 17,
+            pretty_size(self._size, lim_m=1 << 20),
+        )
 
     def unlock(self):
         self._enable_write()
         for sector in range(len(self) >> 16):
             addr = sector << 16
-            wcmd = bytes((self.CMD_WRLR,
-                          (addr >> 16) & 0xff,
-                          (addr >> 8) & 0xff,
-                          (addr >> 0) & 0xff,
-                          (0 << self.SECTOR_LOCK_DOWN) |
-                          (0 << self.SECTOR_WRITE_LOCK)))
+            wcmd = bytes(
+                (
+                    self.CMD_WRLR,
+                    (addr >> 16) & 0xFF,
+                    (addr >> 8) & 0xFF,
+                    (addr >> 0) & 0xFF,
+                    (0 << self.SECTOR_LOCK_DOWN) | (0 << self.SECTOR_WRITE_LOCK),
+                )
+            )
         self._spi.exchange(wcmd)
