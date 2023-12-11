@@ -985,8 +985,14 @@ class Mx25lFlashDevice(_Gen25FlashDevice):
     """Macronix MX25L flash device implementation"""
 
     JEDEC_ID = 0xC2
-    DEVICES = {0x9E: "MX25D", 0x26: "MX25E", 0x20: "MX25E06", 0x23: "MX25V"}
-    SIZES = {0x14: 1 << 20, 0x15: 2 << 20, 0x16: 4 << 20, 0x17: 8 << 20, 0x18: 16 << 20}
+    DEVICES = {0x9E: "MX25D", 0x26: "MX25E", 0x20: "MX25L", 0x23: "MX25V"}
+    SIZES = {
+        0x14: 1 << 20,
+        0x15: 2 << 20,
+        0x16: 4 << 20,
+        0x17: 8 << 20,
+        0x18: 16 << 20,
+    }
     SPI_FREQ_MAX = 104  # MHz
     TIMINGS = {
         "page": (0.0015, 0.003),  # 1.5/3 ms
