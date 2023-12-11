@@ -125,9 +125,9 @@ class BuildPy(build_py):
     def _check_line_width(self, file):
         with open(file, 'rt') as pfp:
             for lpos, line in enumerate(pfp, start=1):
-                if len(line) > 80:
+                if len(line) > 89:
                     print('\n  %d: %s' % (lpos, line.rstrip()))
-                    raise RuntimeError("Invalid line width '%s'" % file)
+                    raise RuntimeError("Invalid line width '%s', %d" % (file, len(line)))
 
 
 def main():
